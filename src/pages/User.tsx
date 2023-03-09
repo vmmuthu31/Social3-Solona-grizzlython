@@ -386,22 +386,21 @@ export default function Feed() {
                   <h1 className="sr-only">Recent questions</h1>
                   <section aria-labelledby="post">
                   <div className={styles.minimize}>
-            <div className={styles.listContainer}>
-                <h2 className={styles.title}>Your User Accounts</h2>
-                    {usersList.map((user, index) => (
-                        <div key={index} className={styles.userCard}>
-                            <div className={styles.userNumber}>
-                                {index + 1}
-                            </div>
-                            <div className={styles.userInfo}>
-                                <p className={styles.userEmail}>User Account: {user.publicKey.toBase58()}</p>
-                                <p className={styles.userAuthority}>Authority: {user.account.authority.toBase58()}</p>
-                            </div>
-                        </div>
-                    ))}
-                    
-            </div>
-            </div>
+                    <div className={styles.listContainer}>
+                       <h2 className={styles.title}>Your User Accounts</h2>
+                            {usersList.map((user, index) => (
+                            <div key={index} className={styles.userCard}>
+                                <div className={styles.userNumber}>
+                                    {index + 1}
+                                </div>
+                                <div className={styles.userInfo}>
+                                  <p className={styles.userEmail}>User Account: {user.publicKey.toBase58()}</p>
+                                  <p className={styles.userAuthority}>Authority: {user.account.authority.toBase58()}</p>
+                                </div>
+                              </div>
+                              ))}
+                      </div>
+                    </div>
             <div className="mt-5">
                     <CreateUser  sdk={sdk} />
                     </div>
