@@ -139,3 +139,11 @@
   transition: background-color 0.2s ease-in-out;
   margin-right: 0.5em;
 }
+
+
+@media only screen and (max-width: 600px) {
+  .minimize{
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+}

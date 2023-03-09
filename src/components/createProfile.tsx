@@ -68,7 +68,7 @@ const CreateProfile = ({sdk}: Props) => {
   }, [wallet.connected]);
 
   return (
-    <div>
+    <div className={`${styles.minimize}`}>
      
       <div className={`${styles.field}`}>
         <label className={`${styles.label}`}>Enter Name:</label>
