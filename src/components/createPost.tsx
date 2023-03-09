@@ -45,13 +45,13 @@ const CreatePost = ({ sdk }: Props) => {
       const postlink =  `https://${ipfsResult}.ipfs.dweb.link/${metadata_id}.json`
       localStorage.setItem('ipfsResult', postlink);
   }
-  const postlink = post(contentofpost);
+  
   const metadataUri = localStorage.getItem('ipfsResult')
       
       
   useEffect(() => {
     if (!wallet.connected) return;
-    sdk.profile.getProfileAccountsByUser(wallet.publicKey as PublicKey)
+    sdk?.profile.getProfileAccountsByUser(wallet.publicKey as PublicKey)
       .then((accounts) => {
         if (!accounts) return;
         const profileOptions = accounts.map((account) => {
@@ -82,14 +82,12 @@ const CreatePost = ({ sdk }: Props) => {
                       <div className="flex space-x-5  text-3xl p-5  font-bold">
                         <h1></h1>
                         <div>
-                          <textarea
+                          <input
                             type="text"
                             onChange={(e) => SetContentofpost(e.target.value)}
                             value={contentofpost}
                             placeholder="What Happening?"
-                            maxlength="150"
-                            cols="30"
-                            rows="1"
+
                             className=" overflow-hidden outline-none"
                           />
                           <i></i>
@@ -98,7 +96,11 @@ const CreatePost = ({ sdk }: Props) => {
                         //  disabled={!selectedProfileOption}
                          onClick={(event) => {
                            event.preventDefault();
-                           create(metadataUri, profile, user, wallet.publicKey as PublicKey);
+                           post(contentofpost);
+                           setTimeout(() => {
+                            create(metadataUri, profile, user, wallet.publicKey as PublicKey);
+                          }, 2000);
+                          
                          }}
                             className="w-lg items-end  my-5 flex justify-end py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >

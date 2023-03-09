@@ -129,19 +129,28 @@ export default function Feed() {
     const [profilesList, setProfilesList] = useState<any[]>([]);
     const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
     const [postsList, setPostsList] = useState<any[]>([]);
-  
-    const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
-    const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-  
+  const [jsonData, setJsonData] = useState(null);
+  const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
+  const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
+
     useEffect(() => {
       if (!wallet.connected) return;
       if (!sdk) return;
       const getData = async () => {
-          const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
-          setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
-          setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
-          setProfileMetadataList(profileMetadataList as any);
-          setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
+        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
+        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
+        setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
+        setProfileMetadataList(profileMetadataList as any);
+        const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
+        const apiUrl = vm;
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            const jsonData = data;
+            setJsonData(jsonData);
+          })
+          .catch(error => console.error(error));
+        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
       };
       getData();
     }, [wallet.connected]);
@@ -268,11 +277,13 @@ export default function Feed() {
                         <div>
                           <Menu.Button className="bg-white rounded-full flex ">
                             <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-10 ml-6 w-10 rounded-full "
-                              src="https://app.social3.club/_next/image?url=https%3A%2F%2Fsocial3-uploads.s3.ap-south-1.amazonaws.com%2Favatars%2Favatar-1670399097233-769196536.jpg&w=256&q=75"
-                              alt=""
-                            />
+                            {jsonData && (
+         <img
+         className="h-10 ml-6 w-10 rounded-full "
+         src={jsonData?.avatar}
+         alt=""
+       />
+      )}
                           </Menu.Button>
                         </div>
                         <Transition

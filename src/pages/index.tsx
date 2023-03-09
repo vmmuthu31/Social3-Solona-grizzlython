@@ -132,23 +132,40 @@ export default function Feed() {
   const [profilesList, setProfilesList] = useState<any[]>([]);
   const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
   const [postsList, setPostsList] = useState<any[]>([]);
-
-  const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
+  const [jsonData, setJsonData] = useState(null);
+  const [postData, setPostData] = useState(null);
+  const [metadataList, setMetadataList] = useState([]);
+  
+  const connection = useMemo(() => new Connection("https://rpc.helius.xyz/?api-key=b649d2ba-718b-4c90-a2c7-c6fdfcc490cc", "confirmed"), []);
   const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
 
-  useEffect(() => {
-    if (!wallet.connected) return;
-    if (!sdk) return;
-    const getData = async () => {
+    useEffect(() => {
+      if (!wallet.connected) return;
+      if (!sdk) return;
+      const getData = async () => {
         const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
         setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
         setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
         setProfileMetadataList(profileMetadataList as any);
+        const postdatalink = postsList.map(item => item.account.metadataUri);
+        const postdatajson = await Promise.all(postdatalink.map(url => fetch(url).then(res => res.json())));
+        setMetadataList(postdatajson);
+        const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
+        const apiUrl = vm;
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            const jsonData = data;
+            setJsonData(jsonData);
+          })
+          .catch(error => console.error(error));
         setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
-    };
-    getData();
-  }, [wallet.connected]);
-  
+      };
+      getData();
+    }, [wallet.connected]);
+    const data =  postsList.map(item => item.account.metadataUri);
+    console.log("profile",data)
+    
   return (
     <div className={`App ${theme}`}>
       <div className={`App ${theme}`}>
@@ -272,11 +289,14 @@ export default function Feed() {
                         <div>
                           <Menu.Button className="bg-white rounded-full flex ">
                             <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-10 ml-6 w-10 rounded-full "
-                              src="https://app.social3.club/_next/image?url=https%3A%2F%2Fsocial3-uploads.s3.ap-south-1.amazonaws.com%2Favatars%2Favatar-1670399097233-769196536.jpg&w=256&q=75"
-                              alt=""
-                            />
+                            {jsonData && (
+         <img
+         className="h-10 ml-6 w-10 rounded-full "
+         src={jsonData?.avatar}
+         alt=""
+       />
+      )}
+                           
                           </Menu.Button>
                         </div>
                         <Transition
@@ -391,6 +411,7 @@ export default function Feed() {
                   <CreatePost sdk={sdk} />
                   
                   <ul role="list" className="space-y-4 mt-5">
+                 
                   {postsList.map((user, index) => (
                       <li
                       key={index}
@@ -402,11 +423,13 @@ export default function Feed() {
                           <div>
                             <div className="flex space-x-3">
                               <div className="flex-shrink-0">
-                                <img
-                                  className="h-10 w-10 rounded-full"
-                                  src="https://img.freepik.com/free-icon/user_318-159711.jpg?w=2000"
-                                  alt=""
-                                />
+                              {jsonData && (
+         <img
+         className="h-10 ml-6 w-10 rounded-full "
+         src={jsonData?.avatar}
+         alt=""
+       />
+      )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium ">
@@ -414,11 +437,26 @@ export default function Feed() {
                                    
                                     className="hover:underline"
                                   >
-                                    {user.publicKey.toBase58()}
+                                    {jsonData && (
+          <div>{jsonData?.name}</div>
+      )}
                                   </a>
                                 </p>
-                                <p className="text-sm pr-40 text-gray-500">
-                                
+                                <p className="text-sm  text-gray-500">
+                                {metadataList[index] &&(
+        <div >
+          <p > {jsonData?.username}</p>
+        
+        </div>
+      )}
+                                </p>
+                                <p className="text-2xl mt-3 pr-40 font-bold">
+                                {metadataList[index] &&(
+        <div >
+          <p >{metadataList[index]?.content?.content}</p>
+        
+        </div>
+      )}
                                 </p>
                               </div>
                               <div className="flex-shrink-0 self-center flex">
@@ -513,10 +551,8 @@ export default function Feed() {
                               </div>
                             </div>
                           </div>
-                          <div
-                            className="mt-2 mr-5 text-sm "
-                           
-                          >{JSON.stringify(user.account.metadataUri)}</div>
+                          
+                          
                           <div className="mt-6 flex justify-between space-x-8">
                             <div className="flex space-x-6">
                               <span className="inline-flex items-center text-sm">

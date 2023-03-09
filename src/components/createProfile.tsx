@@ -52,13 +52,13 @@ const CreateProfile = ({sdk}: Props) => {
     }
   };
   const selectedNamespaceOption ="Professional"
-  const profilelink = Profile(name,bio,username,avatar);
   const metadataUri = localStorage.getItem('profileResult')
   useEffect(() => {
     if (!wallet.connected) return;
     const init = async () => {
-      const users = await sdk.user.getUserAccountsByUser(userPublicKey) as any;
+      const users = await sdk?.user?.getUserAccountsByUser(userPublicKey) as any;
       const usersList = users.map((user: any) => user.publicKey.toBase58());
+      
       setUsersList(usersList[0]);
       if (usersList.length > 0) {
         setSelectedUserOption(usersList[0]);
@@ -66,6 +66,7 @@ const CreateProfile = ({sdk}: Props) => {
     };
     init();
   }, [wallet.connected]);
+  
 
   return (
     <div className={`${styles.minimize}`}>
@@ -105,7 +106,10 @@ const CreateProfile = ({sdk}: Props) => {
         className={`${styles.button}`}
         onClick={async (event) => {
           event.preventDefault();
-          create(metadataUri, selectedNamespaceOption, new PublicKey(selectedUserOption), userPublicKey);
+          Profile(name,bio,username,avatar);
+          setTimeout(() => {
+            create(metadataUri, selectedNamespaceOption, new PublicKey(selectedUserOption), userPublicKey);
+          }, 2000);
         }}
       >
         Create Profile

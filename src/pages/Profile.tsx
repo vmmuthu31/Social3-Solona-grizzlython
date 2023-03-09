@@ -132,6 +132,8 @@ export default function Feed() {
     const [profilesList, setProfilesList] = useState<any[]>([]);
     const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
     const [postsList, setPostsList] = useState<any[]>([]);
+    const [jsonData, setJsonData] = useState(null);
+
   
     const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
     const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
@@ -140,14 +142,26 @@ export default function Feed() {
       if (!wallet.connected) return;
       if (!sdk) return;
       const getData = async () => {
-          const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
-          setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
-          setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
-          setProfileMetadataList(profileMetadataList as any);
-          setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
+        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
+        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
+        setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
+        setProfileMetadataList(profileMetadataList as any);
+        const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
+        const apiUrl = vm;
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            const jsonData = data;
+            setJsonData(jsonData);
+          })
+          .catch(error => console.error(error));
+        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
       };
       getData();
     }, [wallet.connected]);
+    
+   
+    
   return (
     <div className={`App ${theme}`}>
       <div className={`App ${theme}`}>
@@ -271,11 +285,14 @@ export default function Feed() {
                         <div>
                           <Menu.Button className="bg-white rounded-full flex ">
                             <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-10 ml-6 w-10 rounded-full "
-                              src="https://app.social3.club/_next/image?url=https%3A%2F%2Fsocial3-uploads.s3.ap-south-1.amazonaws.com%2Favatars%2Favatar-1670399097233-769196536.jpg&w=256&q=75"
-                              alt=""
-                            />
+                            {jsonData && (
+         <img
+         className="h-10 ml-6 w-10 rounded-full "
+         src={jsonData?.avatar}
+         alt=""
+       />
+      )}
+                            
                           </Menu.Button>
                         </div>
                         <Transition
@@ -391,23 +408,31 @@ export default function Feed() {
                   
                  
             <div className="mt-5">
+            
+            {/* <img alt="avatar" height={50} width={50} src={data?.avatar} /> 
+                           <p>Bio: {data?.bio}</p>
+                          <p>Name: {data?.name}</p>
+                          <p>Username: {data?.username}</p> */}
                     <CreateProfile  sdk={sdk} />
                     </div>
                     <div className={styles.minimize}>
                     <div className={styles.listContainer}>
             <h2 className={styles.title}>Your Profile Accounts</h2>
-                {profilesList.map((user, index) => (
-                    <div key={index} className={styles.userCard}>
+             
+                    <div className={styles.userCard}>
                         <div className={styles.userNumber}>
-                            {index + 1}
+                            
                         </div>
                         <div className={styles.userInfo}>
-                            <p className={styles.userEmail}>Profile Account: {user.publicKey.toBase58()}</p>
-                            <p className={styles.userAuthority}>User Account: {user.account.user.toBase58()}</p>
-                            <p className={styles.userAuthority}>Namespace: {JSON.stringify(user.account.namespace)}</p>
+                        {jsonData && (
+        <div> 
+                           <p className={styles.userAuthority}>Bio: {jsonData?.bio}</p>
+                          <p className={styles.userAuthority}>Name: {jsonData?.name}</p>
+                          <p className={styles.userAuthority}>Username: {jsonData?.username}</p>
+        </div>
+      )} 
                         </div>
                     </div>
-                ))}
             </div>
             </div>
                   </section>
