@@ -393,6 +393,7 @@ export default function Feed() {
             <div className="mt-5">
                     <CreateProfile  sdk={sdk} />
                     </div>
+                    <div className={styles.minimize}>
                     <div className={styles.listContainer}>
             <h2 className={styles.title}>Your Profile Accounts</h2>
                 {profilesList.map((user, index) => (
@@ -407,6 +408,7 @@ export default function Feed() {
                         </div>
                     </div>
                 ))}
+            </div>
             </div>
                   </section>
                 </div>

@@ -385,7 +385,7 @@ export default function Feed() {
                 <div className="mt-4">
                   <h1 className="sr-only">Recent questions</h1>
                   <section aria-labelledby="post">
-                  
+                  <div className={styles.minimize}>
             <div className={styles.listContainer}>
                 <h2 className={styles.title}>Your User Accounts</h2>
                     {usersList.map((user, index) => (
@@ -399,6 +399,8 @@ export default function Feed() {
                             </div>
                         </div>
                     ))}
+                    
+            </div>
             </div>
             <div className="mt-5">
                     <CreateUser  sdk={sdk} />
