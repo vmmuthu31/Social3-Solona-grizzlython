@@ -326,7 +326,7 @@ export default function Feed() {
                   className="lg:hidden"
                   aria-label="Global"
                 >
-                  <div className="max-w-3xl mx-auto px-2 pt-2 pb-3 space-y-1 sm:px-4">
+                  <div className="max-w-3xl mx-auto px-2 bg-slate-300 pt-2 pb-3 space-y-1 sm:px-4">
                     {navigation.map((item) => (
                       <Link
                         key={item.name}
@@ -341,7 +341,7 @@ export default function Feed() {
                       </Link>
                     ))}
                   </div>
-                  <div className="mt-6 max-w-3xl mx-auto px-4 sm:px-6">
+                  <div className=" max-w-3xl font-black bg-slate-300 mx-auto px-4 sm:px-6">
                     <WalletMultiButtonDynamic />
                   </div>
                 </Popover.Panel>
@@ -413,9 +413,9 @@ export default function Feed() {
               </main>
               <aside className="hidden xl:block xl:col-span-4">
                 <div className="sticky top-4 space-y-4">
-                  <section aria-labelledby="connectwallet">
-                    <div className=" rounded-lg shadow">
-                      <div className="text-center p-1 text-xl font-bold">
+                 <section aria-labelledby="connectwallet">
+                    <div className=" rounded-lg bg-gray-300 shadow">
+                      <div className="text-center font-sans p-1 text-2xl font-bold">
                         My wallet: <WalletMultiButtonDynamic />
                       </div>
                     </div>
