@@ -36,7 +36,6 @@ import Link from "next/link";
 import CreateUser from "@/components/createUser";
 import { useGumSDK } from '@/hooks/useGumSDK';
 import CreateProfile from "@/components/createProfile";
-import staticAddresses from "./constants"
 
 const navigation = [
   { name: "Feed", href: "/", icon: BookOpenIcon, current: false },
@@ -156,13 +155,13 @@ export default function Feed() {
             setJsonData(jsonData);
           })
           .catch(error => console.error(error));
-        setPostsList( await sdk.post.getPostAccountsByUser(staticAddresses));
+        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
       };
       getData();
     }, [wallet.connected]);
     
    
-    console.log("postsList",postsList)
+    
   return (
     <div className={`App ${theme}`}>
       <div className={`App ${theme}`}>

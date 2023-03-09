@@ -165,6 +165,7 @@ export default function Feed() {
     }, [wallet.connected]);
     const data =  postsList.map(item => item.account.metadataUri);
     console.log("profile",data)
+     console.log("postsList",postsList)
     
   return (
     <div className={`App ${theme}`}>
