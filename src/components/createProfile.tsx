@@ -59,7 +59,7 @@ const CreateProfile = ({sdk}: Props) => {
     const init = async () => {
       const users = await sdk.user.getUserAccountsByUser(userPublicKey) as any;
       const usersList = users.map((user: any) => user.publicKey.toBase58());
-      setUsersList(usersList);
+      setUsersList(usersList[0]);
       if (usersList.length > 0) {
         setSelectedUserOption(usersList[0]);
       }
@@ -98,22 +98,7 @@ const CreateProfile = ({sdk}: Props) => {
           value={avatar}
           onChange={(event) => SetAvatar(event.target.value)}
           className={`${styles.input}`}
-        />
-       
-        <label className={`${styles.label}`}>Select User:</label>
-        <select
-          className={`${styles.select}`}
-          value={selectedUserOption}
-          onChange={(event) => setSelectedUserOption(event.target.value)}
-        >
-          <option value="">Select User</option>
-          {usersList.map((option: string) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-
-        </select>
+        />     
       </div>
     
       <button

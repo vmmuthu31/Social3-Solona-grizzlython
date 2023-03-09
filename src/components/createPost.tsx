@@ -60,15 +60,17 @@ const CreatePost = ({ sdk }: Props) => {
             userPDA: account.account.user.toBase58(),
           }
         });
-        setUserProfileAccounts(profileOptions);
+        setUserProfileAccounts(profileOptions[0]);
         if (profileOptions.length === 1) {
           setSelectedProfileOption(profileOptions[0]);
         }
       });
 
   }, [wallet.connected]);
-  
-
+    const  profile = userProfileAccounts?.profilePDA
+    const  user =  userProfileAccounts?.userPDA
+ 
+  console.log("userprofile", userProfileAccounts)
   return (
     <div>
       <section aria-labelledby="post">
@@ -76,21 +78,6 @@ const CreatePost = ({ sdk }: Props) => {
                       <div className="flex justify-between px-12 text-xl p-3 font-bold">
                         
                         <div>Upload the POST</div>
-                        <select
-          className={`${styles.select}`}
-          value={selectedProfileOption?.profilePDA || ''}
-          onChange={(event) => {
-            const selectedOption = userProfileAccounts.find((option: any) => option.profilePDA === event.target.value);
-            setSelectedProfileOption(selectedOption || null);
-          }}
-        >
-          <option value="">Select Profile</option>
-          {userProfileAccounts.map((option: any) => (
-            <option key={option.profilePDA} value={option.profilePDA}>
-              {option.profilePDA}
-            </option>
-          ))}
-        </select>
                       </div>
                       <div className="flex space-x-5  text-3xl p-5  font-bold">
                         <h1></h1>
@@ -108,10 +95,10 @@ const CreatePost = ({ sdk }: Props) => {
                           <i></i>
 
                           <button
-                         disabled={!selectedProfileOption}
+                        //  disabled={!selectedProfileOption}
                          onClick={(event) => {
                            event.preventDefault();
-                           create(metadataUri, selectedProfileOption?.profilePDA, selectedProfileOption?.userPDA, wallet.publicKey as PublicKey);
+                           create(metadataUri, profile, user, wallet.publicKey as PublicKey);
                          }}
                             className="w-lg items-end  my-5 flex justify-end py-2 px-5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
