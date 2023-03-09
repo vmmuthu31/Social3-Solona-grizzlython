@@ -425,10 +425,9 @@ export default function Feed() {
                         </div>
                         <div className={styles.userInfo}>
                         {jsonData && (
-        <div> 
-                           <p className={styles.userAuthority}>Bio: {jsonData?.bio}</p>
+        <div>  <p className={styles.userAuthority}>Username: {jsonData?.username}</p>
                           <p className={styles.userAuthority}>Name: {jsonData?.name}</p>
-                          <p className={styles.userAuthority}>Username: {jsonData?.username}</p>
+                          <p className={styles.userAuthority}>Bio: {jsonData?.bio}</p>
         </div>
       )} 
                         </div>
