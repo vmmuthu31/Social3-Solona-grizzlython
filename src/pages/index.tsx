@@ -136,7 +136,7 @@ export default function Feed() {
   const [postData, setPostData] = useState(null);
   const [metadataList, setMetadataList] = useState([]);
   
-  const connection = useMemo(() => new Connection("https://rpc.helius.xyz/?api-key=b649d2ba-718b-4c90-a2c7-c6fdfcc490cc", "confirmed"), []);
+  const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
   const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
 
     useEffect(() => {
