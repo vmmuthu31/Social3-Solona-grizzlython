@@ -516,7 +516,7 @@ export default function Feed() {
                           <div
                             className="mt-2 mr-5 text-sm "
                            
-                          >{JSON.stringify(user.account.metadataUri)}}</div>
+                          >{JSON.stringify(user.account.metadataUri)}</div>
                           <div className="mt-6 flex justify-between space-x-8">
                             <div className="flex space-x-6">
                               <span className="inline-flex items-center text-sm">

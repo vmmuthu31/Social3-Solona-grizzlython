@@ -110,6 +110,7 @@ export default function Feed() {
     var toggleDarkMode = function (checked) {
       setDarkMode(checked);
     };
+    
   
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
     const toggleTheme = () => {
