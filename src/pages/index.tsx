@@ -30,14 +30,15 @@ import { DarkModeSwitch } from "react-toggle-dark-mode";
 import localStorage from "localStorage";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useMemo, useCallback, useEffect, useState } from "react";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import dynamic from "next/dynamic";
 import { useCreateProfile, useCreateUser, useProfile } from "@gumhq/react-sdk";
 import { useCreatePost } from "@gumhq/react-sdk";
 import axios from "axios";
 import Link from "next/link";
 import CreatePost from "@/components/createPost";
-import { useGumSDK } from '@/hooks/useGumSDK';
+import { useGumSDK } from "@/hooks/useGumSDK";
+
 const navigation = [
   { name: "Feed", href: "/", icon: BookOpenIcon, current: true },
   { name: "Profile", href: "/Profile", icon: FireIcon, current: false },
@@ -105,14 +106,34 @@ function classNames(...classes) {
 }
 
 export default function Feed() {
-  const [isDarkMode, setDarkMode] = React.useState(false);
-  const [contentofpost, SetContentofpost] = useState("");
-
-  var toggleDarkMode = function (checked) {
-    setDarkMode(checked);
-  };
-
+  const [isDarkMode, setDarkMode] = useState(false);
+  const [contentofpost, setContentOfPost] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const wallet = useWallet();
+  const userPublicKey = wallet?.publicKey as PublicKey;
+  const currentaddress= wallet?.publicKey as PublicKey;
+  const connection = useMemo(
+    () => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"),
+    []
+  );
+  const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [profilesList, setProfilesList] = useState<any[]>([]);
+  const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
+  const [postsList, setPostsList] = useState<any[]>([]);
+  const [metadataList, setMetadataList] = useState<any[]>([]);
+  const [jsonData, setJsonData] = useState<any>(null);
+  const [currentprofileMetadataList, setCurrentprofileMetadataList]= useState<any>(null);
+  const [current, setCurrent]= useState<any>(null);
+  const toggleDarkMode = (checked) => setDarkMode(checked);
+  const staticAddresses: PublicKey[] = [
+    new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
+    new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
+    new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
+    new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
+    new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
+  ];
+
   const toggleTheme = () => {
     if (theme === "light") {
       setTheme("dark");
@@ -120,53 +141,117 @@ export default function Feed() {
       setTheme("light");
     }
   };
+  const shuffleArray = (array) => {
+    let arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+    return arr;
+  };
+
   useEffect(() => {
     localStorage.setItem("theme", theme);
     document.body.className = theme;
   }, [theme]);
 
-  const wallet = useWallet();
-  const userPublicKey = wallet?.publicKey as PublicKey;
-
-  const [usersList, setUsersList] = useState<any[]>([]);
-  const [profilesList, setProfilesList] = useState<any[]>([]);
-  const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
-  const [postsList, setPostsList] = useState<any[]>([]);
-  const [jsonData, setJsonData] = useState(null);
-  const [postData, setPostData] = useState(null);
-  const [metadataList, setMetadataList] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (wallet.connected && sdk) {
+        const profileMetadataList = await Promise.all(
+          staticAddresses.map((address) =>
+            sdk.profileMetadata.getProfileMetadataAccountsByUser(address)
+          )
+        );
+        const currentprofileMetadataList = await 
+            sdk.profileMetadata.getProfileMetadataAccountsByUser(currentaddress)
+    
+        const usersList = await Promise.all(
+          staticAddresses.map((address) =>
+            sdk.user.getUserAccountsByUser(address)
+          )
+        );
+        const profilesList = await Promise.all(
+          staticAddresses.map((address) =>
+            sdk.profile.getProfileAccountsByUser(address)
+          )
+        );
+        const posts = await Promise.all(
+          staticAddresses.map((address) =>
+            sdk.post.getPostAccountsByUser(address)
+          )
+        );
+        const postsData = posts.flat();
+        setPostsList(shuffleArray(postsData));
+        setProfileMetadataList(profileMetadataList.flat());
+        setCurrentprofileMetadataList(currentprofileMetadataList[0]?.[0])
+        setUsersList(usersList.flat());
+        setProfilesList(profilesList.flat());
+      }
+    };
   
-  const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
-  const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-
-    useEffect(() => {
-      if (!wallet.connected) return;
-      if (!sdk) return;
-      const getData = async () => {
-        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
-        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
-        setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
-        setProfileMetadataList(profileMetadataList as any);
-        const postdatalink = postsList.map(item => item.account.metadataUri);
-        const postdatajson = await Promise.all(postdatalink.map(url => fetch(url).then(res => res.json())));
-        setMetadataList(postdatajson);
-        const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
-        const apiUrl = vm;
+    fetchData();
+  }, [wallet.connected, sdk, staticAddresses]);
+  console.log("currentuser",currentprofileMetadataList?.account?.metadataUri)
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      if (postsList.length > 0) {
+        const postDataLink = postsList.map((item) => item.account.metadataUri);
+        const postDataJson = await Promise.all(
+          postDataLink.map((url) => fetch(url).then((res) => res.json()))
+        );
+        setMetadataList(postDataJson);
+      }
+    };
+  
+    fetchMetadata();
+  }, [postsList]);
+    const fetchcurrentuser = async () => {
+     
+        const postDataLink = currentprofileMetadataList?.account?.metadataUri
+        const apiUrl = postDataLink;
         fetch(apiUrl)
           .then(response => response.json())
           .then(data => {
             const jsonData = data;
-            setJsonData(jsonData);
+            setCurrent(jsonData);
           })
-          .catch(error => console.error(error));
-        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
-      };
-      getData();
-    }, [wallet.connected]);
-    const data =  postsList.map(item => item.account.metadataUri);
-    console.log("profile",data)
-     console.log("postsList",postsList)
+        }
+    fetchcurrentuser();
     
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const metadataUrls =  profileMetadataList.map(item => item[0].account?.metadataUri);
+      const profiles = [];
+      for (let i = 0; i < metadataUrls.length; i++) {
+        
+        const metadataUrl = metadataUrls[i];
+        try {
+          const response = await fetch(metadataUrl);
+          const data = await response.json();
+          profiles.push({
+            publicKey: profileMetadataList[i].publicKey,
+            metadataUri: metadataUrl,
+            data: data
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      setJsonData(profiles);
+    };
+  
+    fetchProfileData();
+  }, [profileMetadataList, userPublicKey,currentprofileMetadataList]);
+  console.log("Current",current)
+  console.log("metadata", metadataList);
+  console.log("profilemetadata", profileMetadataList);
+  console.log("postsList", postsList);
+  console.log("JsonData",jsonData)
+  
+
   return (
     <div className={`App ${theme}`}>
       <div className={`App ${theme}`}>
@@ -290,14 +375,13 @@ export default function Feed() {
                         <div>
                           <Menu.Button className="bg-white rounded-full flex ">
                             <span className="sr-only">Open user menu</span>
-                            {jsonData && (
-         <img
-         className="h-10 ml-6 w-10 rounded-full "
-         src={jsonData?.avatar}
-         alt=""
-       />
-      )}
-                           
+                            {current && (
+                              <img
+                                className="h-10 ml-6 w-10 rounded-full "
+                                src={current?.avatar}
+                                alt=""
+                              />
+                            )}
                           </Menu.Button>
                         </div>
                         <Transition
@@ -410,55 +494,47 @@ export default function Feed() {
                 <div className="mt-4">
                   <h1 className="sr-only">Recent questions</h1>
                   <CreatePost sdk={sdk} />
-                  
+
                   <ul role="list" className="space-y-4 mt-5">
-                 
-                  {postsList.map((user, index) => (
+              
+                    {postsList.map((user, index) => (
                       <li
-                      key={index}
+                        key={index}
                         className=" px-4 py-6 shadow sm:p-6 sm:rounded-lg"
                       >
-                        <article
-                          aria-labelledby={"question-title-" }
-                        >
+                        <article aria-labelledby={"question-title-"}>
                           <div>
                             <div className="flex space-x-3">
                               <div className="flex-shrink-0">
-                              {jsonData && (
-         <img
-         className="h-10 ml-6 w-10 rounded-full "
-         src={jsonData?.avatar}
-         alt=""
-       />
-      )}
+                                {jsonData[index]?.data && (
+                                  <img
+                                    className="h-10 ml-6 w-10 rounded-full "
+                                    src={jsonData[index]?.data.avatar}
+                                    alt=""
+                                  />
+                                )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium ">
-                                  <a
-                                   
-                                    className="hover:underline"
-                                  >
-                                    {jsonData && (
-          <div>{jsonData?.name}</div>
-      )}
+                                  <a className="hover:underline">
+                                    {jsonData[index]?.data && <div>{jsonData[index]?.data?.name}</div>}
                                   </a>
                                 </p>
                                 <p className="text-sm  text-gray-500">
-                                {metadataList[index] &&(
-        <div >
-          <p > {jsonData?.username}</p>
-        
-        </div>
-      )}
+                                  {metadataList[index] && (
+                                    <div>
+                                      <p> {jsonData[index]?.data?.username}</p>
+                                    </div>
+                                  )}
                                 </p>
-                                <p className="text-2xl mt-3 pr-40 font-bold">
-                                {metadataList[index] &&(
-        <div >
-          <p >{metadataList[index]?.content?.content}</p>
-        
-        </div>
-      )}
-                                </p>
+
+                                {metadataList[index] && (
+                                  <div>
+                                    <p className="text-2xl mt-3 pr-40 font-bold">
+                                      {metadataList[index]?.content?.content}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-shrink-0 self-center flex">
                                 <Menu
@@ -552,8 +628,7 @@ export default function Feed() {
                               </div>
                             </div>
                           </div>
-                          
-                          
+
                           <div className="mt-6 flex justify-between space-x-8">
                             <div className="flex space-x-6">
                               <span className="inline-flex items-center text-sm">

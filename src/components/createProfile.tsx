@@ -57,7 +57,7 @@ const CreateProfile = ({sdk}: Props) => {
     if (!wallet.connected) return;
     const init = async () => {
       const users = await sdk?.user?.getUserAccountsByUser(userPublicKey) as any;
-      const usersList = users.map((user: any) => user.publicKey.toBase58());
+      const usersList = users?.map((user: any) => user.publicKey.toBase58());
       
       setUsersList(usersList[0]);
       if (usersList.length > 0) {
