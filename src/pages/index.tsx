@@ -132,6 +132,7 @@ export default function Feed() {
     new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
     new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
     new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
+    new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
   ];
 
   const toggleTheme = () => {
