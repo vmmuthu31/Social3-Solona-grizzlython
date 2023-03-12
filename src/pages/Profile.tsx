@@ -95,6 +95,8 @@ export default function Feed() {
     const [balance, setBalance] =useState([]);
     const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
     const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
+    const oldconnection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
+    const oldsdk = useGumSDK(oldconnection, { preflightCommitment: "confirmed" }, "devnet");
     useEffect(() => {
       async function getAccountBalance() {
         try {
@@ -159,7 +161,7 @@ export default function Feed() {
         }
         setAllJson(profiles);
       };
-      if (counterRef.current < 2) {
+      if (counterRef.current < 4) {
         fetchProfileData();
       }
     }, [userPublicKey,Allprofile,counterRef]);
@@ -198,7 +200,7 @@ export default function Feed() {
           console.error(error);
         }
       };
-      if (counterRef.current < 2) {
+      if (counterRef.current < 4) {
         fetchData();
       }
     }, [wallet.connected, sdk,staticAddresses,counterRef]);
@@ -460,7 +462,7 @@ export default function Feed() {
                   
                  
             <div className="mt-5">
-                    <CreateProfile  sdk={sdk} />
+                    <CreateProfile  sdk={oldsdk} />
                     </div>
                     <div className={styles.minimize}>
                     <div className={styles.listContainer}>

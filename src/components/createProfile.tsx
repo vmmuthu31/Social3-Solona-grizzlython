@@ -11,6 +11,8 @@ type Namespace = "Professional" | "Personal" | "Gaming" | "Degen";
 
 interface Props {
   sdk: SDK;
+  myState: string | undefined;
+
 }
 
 export const handleCreateProfile = async (
@@ -33,9 +35,10 @@ const CreateProfile = ({sdk}: Props) => {
   const [username, SetUsername] = useState('')
   const [avatar, SetAvatar] = useState('')
   const [selectedUserOption, setSelectedUserOption] = useState("");
+  const [metadataUri, setMetadataUri] = useState('');
   const { create, profilePDA, error, loading } = useCreateProfile(sdk);
-  const Profile = async () => {
-    if (usersList?.length > 0) return;
+  const Profile = async (name:any, bio: String, username:String, avatar: String) => {
+    // if (usersList.length > 0) return;
     try {
       const metadata_id = uuidv4();
       const ipfsResult = await uploadToIPFS({
@@ -46,21 +49,21 @@ const CreateProfile = ({sdk}: Props) => {
         avatar: avatar,
       });
       const profilelink = `https://${ipfsResult}.ipfs.dweb.link/${metadata_id}.json`
-      localStorage.setItem('profileResult', profilelink);
+      console.log(profilelink)
+      setMetadataUri(profilelink)
     } catch (error) {
       console.log("error", error);
     }
   };
   const selectedNamespaceOption ="Professional"
-  const metadataUri = localStorage.getItem('profileResult')
   useEffect(() => {
     if (!wallet.connected) return;
     const init = async () => {
-      const users = await sdk?.user?.getUserAccountsByUser(userPublicKey) as any;
-      const usersList = users?.map((user: any) => user?.publicKey.toBase58());
-      setUsersList(usersList?.[0]);
-      if (usersList?.length > 0) {
-        setSelectedUserOption(usersList?.[0]);
+      const users = await sdk?.user.getUserAccountsByUser(userPublicKey) as any;
+      const usersList = users?.map((user: any) => user.publicKey.toBase58());
+      setUsersList(usersList[0]);
+      if (usersList.length > 0) {
+        setSelectedUserOption(usersList[0]);
       }
     };
     init();
@@ -104,11 +107,13 @@ const CreateProfile = ({sdk}: Props) => {
       <button
         className={`${styles.button}`}
         onClick={async (event) => {
-          event.preventDefault();
+          event.preventDefault()
           Profile(name,bio,username,avatar);
           setTimeout(() => {
+            console.log("result",metadataUri)
+            // const metadataUri = result
             create(metadataUri, selectedNamespaceOption, new PublicKey(selectedUserOption), userPublicKey);
-          }, 2000);
+          }, 4000);
         }}
       >
         Create Profile
