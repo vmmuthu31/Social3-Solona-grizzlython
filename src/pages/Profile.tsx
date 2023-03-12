@@ -1,6 +1,8 @@
 import { Fragment } from "react";
 import React from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
+import Moralis from 'moralis';
+import { SolNetwork } from '@moralisweb3/common-sol-utils';
 import {
   BookOpenIcon,
   ChatAltIcon,
@@ -30,10 +32,9 @@ import { DarkModeSwitch } from "react-toggle-dark-mode";
 import localStorage from "localStorage";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useMemo, useCallback, useEffect, useState } from "react";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import CreateUser from "@/components/createUser";
 import { useGumSDK } from '@/hooks/useGumSDK';
 import CreateProfile from "@/components/createProfile";
 
@@ -127,39 +128,133 @@ export default function Feed() {
   
     const wallet = useWallet();
     const userPublicKey = wallet?.publicKey as PublicKey;
-  
+    const currentaddress= wallet?.publicKey as PublicKey;
+    const [nfts, setNfts] = useState([]);
     const [usersList, setUsersList] = useState<any[]>([]);
     const [profilesList, setProfilesList] = useState<any[]>([]);
+    const [badge, setBadge] = useState('Basic');
     const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
     const [postsList, setPostsList] = useState<any[]>([]);
     const [jsonData, setJsonData] = useState(null);
+    const [allJson, setAllJson] = useState<any>(null);
+    const [Allprofile,setAllProfile] =useState<any[]>([]);
+    const [methodCalled, setMethodCalled] = useState(false);
 
-  
-    const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
+    const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
     const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
+    
   
     useEffect(() => {
-      if (!wallet.connected) return;
-      if (!sdk) return;
-      const getData = async () => {
-        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
-        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
-        setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
-        setProfileMetadataList(profileMetadataList as any);
-        const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
-        const apiUrl = vm;
-        fetch(apiUrl)
-          .then(response => response.json())
-          .then(data => {
-            const jsonData = data;
-            setJsonData(jsonData);
-          })
-          .catch(error => console.error(error));
-        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
-      };
-      getData();
-    }, [wallet.connected]);
+      const runApp = async () => {
+        await Moralis.start({
+          apiKey: "32i7JeKMh7sgaJ8cvdl2YqUHIvgP8uvjlwaiNoKshm89JvAv6yCMxcSgRlIxl5PZ",
+        });
     
+        const address = "vUPpzLhoCgND6Se2SeF7esqoWenxqYptt1XLXpMhi96";
+        const network = SolNetwork.DEVNET;
+    
+        const response = await Moralis.SolApi.account.getNFTs({
+          address,
+          network,
+        });
+        setNfts(response.toJSON());
+
+      };
+    
+      if (!methodCalled) {
+        runApp();
+        setMethodCalled(true);
+      }
+    }, [methodCalled]);
+
+    const NFTBadgeAvatar = ({ nfts }) => {
+    if (nfts >= 5) {
+        setBadge('Premium');
+      }
+    }
+    const staticAddresses: PublicKey[] = [
+      new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
+      new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
+      new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
+      new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
+      new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
+      new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
+    ];
+    useEffect(() => {
+      const fetchProfileData = async () => {
+        const metadataUrls =  Allprofile?.map(item => item[0].account?.metadataUri);
+        const profiles = [];
+        for (let i = 0; i < metadataUrls.length; i++) {
+          
+          const metadataUrl = metadataUrls[i];
+          try {
+            const response = await fetch(metadataUrl);
+            const data = await response.json();
+            profiles.push({
+              publicKey: Allprofile[i].publicKey,
+              metadataUri: metadataUrl,
+              data: data
+            });
+          } catch (error) {
+            console.error(error);
+          }
+        }
+        setAllJson(profiles);
+      };
+    
+      fetchProfileData();
+    }, [userPublicKey,Allprofile]);
+    const shuffleArray = (array) => {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    };
+    
+    useEffect(() => {
+      const fetchData = async () => {
+        if (!wallet.connected || !sdk) return;
+    
+        try {
+          const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(currentaddress);
+          const usersList = await sdk.user.getUserAccountsByUser(currentaddress);
+          const profilesList = await sdk.profile.getProfileAccountsByUser(currentaddress);
+          const allprofiledata = await Promise.all(
+            staticAddresses.map((address) =>
+              sdk.profileMetadata.getProfileMetadataAccountsByUser(address)
+            )
+          );
+          const vm = profileMetadataList?.[0]?.[0]?.account?.metadataUri;
+          const apiUrl = vm;
+          if (apiUrl) {
+            const response = await fetch(apiUrl);
+            const jsonData = await response.json();
+            setJsonData(jsonData);
+          }
+    
+          const postsList = await sdk.post.getPostAccountsByUser(currentaddress);
+          setUsersList(usersList);
+          setProfilesList(profilesList);
+          setAllProfile(shuffleArray(allprofiledata.flat()));
+          setProfileMetadataList(profileMetadataList as any);
+          setPostsList(postsList);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+    
+      fetchData();
+    }, [wallet.connected, sdk, userPublicKey,staticAddresses]);
+    const recommendedProfiles = allJson?.slice(0, 3).map(profile => {
+      const { name, bio, username, avatar } = profile.data;
+      return { name, bio, username, avatar };
+    });
+    const sliceIndex = 3;
+    const slicedProfiles = recommendedProfiles?.slice(0, sliceIndex);
    
     
   return (
@@ -408,11 +503,6 @@ export default function Feed() {
                   
                  
             <div className="mt-5">
-            
-            {/* <img alt="avatar" height={50} width={50} src={data?.avatar} /> 
-                           <p>Bio: {data?.bio}</p>
-                          <p>Name: {data?.name}</p>
-                          <p>Username: {data?.username}</p> */}
                     <CreateProfile  sdk={sdk} />
                     </div>
                     <div className={styles.minimize}>
@@ -431,9 +521,41 @@ export default function Feed() {
         </div>
       )} 
                         </div>
+                       
                     </div>
             </div>
+           
             </div>
+            <div className="mt-3">
+            <label className="font-bold text-lg ">My NFT Badges:</label>
+            {badge && (
+                        <div className="max-w-2xl mx-auto">
+                          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                            <div className="text-center pt-4 pb-2 bg-gray-200">  
+                                <h3 className="text-lg font-medium">{badge} BADGE</h3>
+                            </div>
+                            <div className="py-6">
+                                {badge === 'Basic' && (
+                                  <>
+                                <img src="https://ilovecheer.com/wp-content/uploads/2018/05/LVCBDG-49.png" alt="Basic Badge" className="w-32 mx-auto" />
+                                <p className="text-center mt-1">{nfts.length} NFTs</p>
+                                </>
+                                )}
+
+                                
+                                {badge === 'Premium' && (
+                                  <>
+                                <img src="https://cdn-icons-png.flaticon.com/512/70/70535.png" alt="Premium Badge" className="w-32 mx-auto" />
+                                <p className="text-center mt-1">{nfts.length} NFTs</p>
+                                </>
+                                )}
+                            </div>
+                          </div>
+    </div>
+  )}
+   
+     </div>
+
                   </section>
                 </div>
               </main>
@@ -461,24 +583,27 @@ export default function Feed() {
                             role="list"
                             className="-my-4 divide-y divide-gray-200"
                           >
-                            {whoToFollow.map((user) => (
+                            {slicedProfiles?.map((user) => (
                               <li
-                                key={user.handle}
+                                key={user.metadata_id}
                                 className="flex items-center py-4 space-x-3"
                               >
                                 <div className="flex-shrink-0">
                                   <img
                                     className="h-16 w-16 rounded-full"
-                                    src={user.imageUrl}
+                                    src={user.avatar|| "https://pbs.twimg.com/profile_images/1621492955868545024/CpsOM4M3_400x400.jpg"}
                                     alt=""
                                   />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium ">
-                                    <a href={user.href}>{user.name}</a>
+                                    <a href={user.href}>{user.name|| "GumProtocol"}</a>
                                   </p>
                                   <p className="text-sm text-gray-500">
-                                    <a href={user.href}>{"@" + user.handle}</a>
+                                    <a href={user.href}>{"@" + (user.username|| "Gum")}</a>
+                                  </p>
+                                  <p className="text-md text-black ml-1">
+                                    <a href={user.href}>{user.bio|| "Create User, profile, post"}</a>
                                   </p>
                                 </div>
                                 <div className="flex-shrink-0">

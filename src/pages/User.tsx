@@ -30,7 +30,7 @@ import { DarkModeSwitch } from "react-toggle-dark-mode";
 import localStorage from "localStorage";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useMemo, useCallback, useEffect, useState } from "react";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import CreateUser from "@/components/createUser";
@@ -121,39 +121,94 @@ export default function Feed() {
       localStorage.setItem("theme", theme);
       document.body.className = theme;
     }, [theme]);
-  
     const wallet = useWallet();
     const userPublicKey = wallet?.publicKey as PublicKey;
-  
     const [usersList, setUsersList] = useState<any[]>([]);
-    const [profilesList, setProfilesList] = useState<any[]>([]);
-    const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
-    const [postsList, setPostsList] = useState<any[]>([]);
-  const [jsonData, setJsonData] = useState(null);
-  const connection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
-  const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-
+    const [Allprofile,setAllProfile] =useState<any[]>([]);
+    const [jsonData, setJsonData] = useState(null);
+    const [allJson, setAllJson] = useState<any>(null);
+    const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
+    const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
+    const staticAddresses: PublicKey[] = [
+      new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
+      new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
+      new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
+      new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
+      new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
+      new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
+    ];
+    const shuffleArray = (array) => {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    };
     useEffect(() => {
-      if (!wallet.connected) return;
-      if (!sdk) return;
-      const getData = async () => {
+      const fetchProfileData = async () => {
+        const metadataUrls =  Allprofile.map(item => item[0].account?.metadataUri);
+        const profiles = [];
+        for (let i = 0; i < metadataUrls.length; i++) {
+          
+          const metadataUrl = metadataUrls[i];
+          try {
+            const response = await fetch(metadataUrl);
+            const data = await response.json();
+            profiles.push({
+              publicKey: Allprofile[i].publicKey,
+              metadataUri: metadataUrl,
+              data: data
+            });
+          } catch (error) {
+            console.error(error);
+          }
+        }
+        setAllJson(profiles);
+      };
+    
+      fetchProfileData();
+    }, [userPublicKey,staticAddresses]);
+    
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
         const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
-        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
-        setProfilesList(await sdk.profile.getProfileAccountsByUser(userPublicKey));
-        setProfileMetadataList(profileMetadataList as any);
+        const allprofiledata = await Promise.all(
+          staticAddresses.map((address) =>
+            sdk.profileMetadata.getProfileMetadataAccountsByUser(address)
+          )
+        );
         const vm =  profileMetadataList[0]?.[0]?.account?.metadataUri;
         const apiUrl = vm;
-        fetch(apiUrl)
-          .then(response => response.json())
-          .then(data => {
-            const jsonData = data;
-            setJsonData(jsonData);
-          })
-          .catch(error => console.error(error));
-        setPostsList( await sdk.post.getPostAccountsByUser(userPublicKey));
-      };
-      getData();
-    }, [wallet.connected]);
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
+        setAllProfile(shuffleArray(allprofiledata.flat()));
+        setJsonData(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+  
+    if (wallet.connected && sdk) {
+      fetchData();
+    }
+  }, [wallet.connected, sdk]);
+
+  const recommendedProfiles = allJson?.slice(0, 3).map(profile => {
+    const { name, bio, username, avatar } = profile.data;
+    return { name, bio, username, avatar };
+  });  
+  const sliceIndex = 3;
+  const slicedProfiles = recommendedProfiles?.slice(0, sliceIndex);
+  
   return (
     <div className={`App ${theme}`}>
       <div className={`App ${theme}`}>
@@ -194,7 +249,7 @@ export default function Feed() {
                     </div>
                     <div className="min-w-0 flex-1 md:px-8 lg:px-0 xl:col-span-6">
                       <div className="flex text-2xl font-bold items-center px-6 py-4 md:max-w-3xl md:mx-auto lg:max-w-none lg:mx-0 xl:px-0">
-                        Profile
+                        User
                       </div>
                     </div>
                     <div className="flex items-center md:absolute md:right-0 md:inset-y-0 lg:hidden">
@@ -442,24 +497,27 @@ export default function Feed() {
                             role="list"
                             className="-my-4 divide-y divide-gray-200"
                           >
-                            {whoToFollow.map((user) => (
+                             {slicedProfiles?.map((user) => (
                               <li
-                                key={user.handle}
+                                key={user.metadata_id}
                                 className="flex items-center py-4 space-x-3"
                               >
                                 <div className="flex-shrink-0">
                                   <img
                                     className="h-16 w-16 rounded-full"
-                                    src={user.imageUrl}
+                                    src={user.avatar|| "https://pbs.twimg.com/profile_images/1621492955868545024/CpsOM4M3_400x400.jpg"}
                                     alt=""
                                   />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium ">
-                                    <a href={user.href}>{user.name}</a>
+                                    <a href={user.href}>{user.name|| "GumProtocol"}</a>
                                   </p>
                                   <p className="text-sm text-gray-500">
-                                    <a href={user.href}>{"@" + user.handle}</a>
+                                    <a href={user.href}>{"@" + (user.username|| "Gum")}</a>
+                                  </p>
+                                  <p className="text-md text-black ml-1">
+                                    <a href={user.href}>{user.bio|| "Create User, profile, post"}</a>
                                   </p>
                                 </div>
                                 <div className="flex-shrink-0">

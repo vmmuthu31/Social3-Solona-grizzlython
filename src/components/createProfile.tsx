@@ -58,7 +58,6 @@ const CreateProfile = ({sdk}: Props) => {
     const init = async () => {
       const users = await sdk?.user?.getUserAccountsByUser(userPublicKey) as any;
       const usersList = users?.map((user: any) => user.publicKey.toBase58());
-      
       setUsersList(usersList[0]);
       if (usersList.length > 0) {
         setSelectedUserOption(usersList[0]);

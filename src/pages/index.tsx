@@ -107,7 +107,6 @@ function classNames(...classes) {
 
 export default function Feed() {
   const [isDarkMode, setDarkMode] = useState(false);
-  const [contentofpost, setContentOfPost] = useState("");
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const wallet = useWallet();
   const userPublicKey = wallet?.publicKey as PublicKey;
@@ -117,8 +116,6 @@ export default function Feed() {
     []
   );
   const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-  const [usersList, setUsersList] = useState<any[]>([]);
-  const [profilesList, setProfilesList] = useState<any[]>([]);
   const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
   const [postsList, setPostsList] = useState<any[]>([]);
   const [metadataList, setMetadataList] = useState<any[]>([]);
@@ -169,11 +166,6 @@ export default function Feed() {
         const currentprofileMetadataList = await 
             sdk.profileMetadata.getProfileMetadataAccountsByUser(currentaddress)
     
-        const usersList = await Promise.all(
-          staticAddresses.map((address) =>
-            sdk.user.getUserAccountsByUser(address)
-          )
-        );
         const profilesList = await Promise.all(
           staticAddresses.map((address) =>
             sdk.profile.getProfileAccountsByUser(address)
@@ -188,14 +180,11 @@ export default function Feed() {
         setPostsList(shuffleArray(postsData));
         setProfileMetadataList(profileMetadataList.flat());
         setCurrentprofileMetadataList(currentprofileMetadataList[0]?.[0])
-        setUsersList(usersList.flat());
-        setProfilesList(profilesList.flat());
       }
     };
   
-    fetchData();
+    fetchData()
   }, [wallet.connected, sdk, staticAddresses]);
-  console.log("currentuser",currentprofileMetadataList?.account?.metadataUri)
   useEffect(() => {
     const fetchMetadata = async () => {
       if (postsList.length > 0) {
@@ -245,12 +234,13 @@ export default function Feed() {
     };
   
     fetchProfileData();
-  }, [profileMetadataList, userPublicKey,currentprofileMetadataList]);
-  console.log("Current",current)
-  console.log("metadata", metadataList);
-  console.log("profilemetadata", profileMetadataList);
-  console.log("postsList", postsList);
-  console.log("JsonData",jsonData)
+  }, [profileMetadataList, userPublicKey]);
+  const recommendedProfiles = jsonData?.slice(0, 3).map(profile => {
+    const { name, bio, username, avatar } = profile.data;
+    return { name, bio, username, avatar };
+  });  
+  const sliceIndex = 3;
+  const slicedProfiles = recommendedProfiles?.slice(0, sliceIndex);
   
 
   return (
@@ -723,24 +713,27 @@ export default function Feed() {
                             role="list"
                             className="-my-4 divide-y divide-gray-200"
                           >
-                            {whoToFollow.map((user) => (
+                            {slicedProfiles?.map((user) => (
                               <li
-                                key={user.handle}
+                                key={user.metadata_id}
                                 className="flex items-center py-4 space-x-3"
                               >
                                 <div className="flex-shrink-0">
                                   <img
                                     className="h-16 w-16 rounded-full"
-                                    src={user.imageUrl}
+                                    src={user.avatar|| "https://pbs.twimg.com/profile_images/1621492955868545024/CpsOM4M3_400x400.jpg"}
                                     alt=""
                                   />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm font-medium ">
-                                    <a href={user.href}>{user.name}</a>
+                                    <a href={user.href}>{user.name|| "GumProtocol"}</a>
                                   </p>
                                   <p className="text-sm text-gray-500">
-                                    <a href={user.href}>{"@" + user.handle}</a>
+                                    <a href={user.href}>{"@" + (user.username|| "Gum")}</a>
+                                  </p>
+                                  <p className="text-md text-black ml-1">
+                                    <a href={user.href}>{user.bio|| "Create User, profile, post"}</a>
                                   </p>
                                 </div>
                                 <div className="flex-shrink-0">

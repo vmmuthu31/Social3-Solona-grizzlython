@@ -70,7 +70,6 @@ const CreatePost = ({ sdk }: Props) => {
     const  profile = userProfileAccounts?.profilePDA
     const  user =  userProfileAccounts?.userPDA
  
-  console.log("userprofile", userProfileAccounts)
   return (
     <div>
       <section aria-labelledby="post">
