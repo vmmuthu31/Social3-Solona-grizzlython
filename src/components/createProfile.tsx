@@ -114,8 +114,6 @@ const CreateProfile = ({ sdk }: Props) => {
             onChange={(event) => handleUserProfileChange('avatar', event.target.value)}
             className={styles.input}
           />
-          <label className={styles.label}>Select Namespace:</label>
-         
           <button className={styles.button} onClick={handleCreateProfile}>Create Profile</button>
         </div>
       </div>
