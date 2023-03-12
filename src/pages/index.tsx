@@ -45,7 +45,7 @@ const navigation = [
   { name: "User", href: "/User", icon: UserIcon, current: false },
 ];
 const userNavigation = [
-  { icon: UserIcon, href: "#" },
+  { name: "", icon: UserIcon, href: "#" },
 ];
 
 const BellNavigation = [{ name: "Notifications", href: "#" }];

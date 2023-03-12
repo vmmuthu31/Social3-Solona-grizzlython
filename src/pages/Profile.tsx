@@ -45,7 +45,7 @@ const navigation = [
   
 ];
 const userNavigation = [
-  { icon: UserIcon, href: "#" },
+  { name: "1", icon: UserIcon, href: "#" },
 ];
 
 const BellNavigation = [{ name: "Notifications", href: "#" }];
@@ -90,7 +90,7 @@ export default function Feed() {
     const [jsonData, setJsonData] = useState(null);
     const [allJson, setAllJson] = useState<any>(null);
     const [Allprofile,setAllProfile] =useState<any[]>([]);
-    const [methodCalled, setMethodCalled] = useState(false);
+    const [tokens, setTokens] = useState(false);
     const counterRef = useRef(0);
     const [balance, setBalance] =useState([]);
     const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
@@ -114,10 +114,9 @@ export default function Feed() {
             "network": "devnet",
             "address": "AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"
           });
-          console.log(Tokenprice.raw);
-          setNfts(Tokenprice.raw())
+          setNfts(getspl.raw())
           setBalance(balances.raw())
-          console.log(balances.raw);
+          setTokens(Tokenprice.raw())
           counterRef.current += 1;
         } catch (e) {
           console.error(e);
@@ -128,10 +127,9 @@ export default function Feed() {
       }
       
     }, [counterRef]);
-    console.log("nfts",nfts)  
-console.log("balance",balance)
+   
     const NFTBadgeAvatar = ({ nfts }) => {
-    if (nfts >= 5) {
+    if (nfts && balance && tokens >= 3) {
         setBadge('Premium');
       }
     }
@@ -497,7 +495,7 @@ console.log("balance",balance)
                                 {badge === 'Basic' && (
                                   <>
                                 <img src="https://ilovecheer.com/wp-content/uploads/2018/05/LVCBDG-49.png" alt="Basic Badge" className="w-32 mx-auto" />
-                                <p className="text-center mt-1">{nfts.length} NFTs</p>
+                                <p className="text-center mt-1">{nfts.length} NFTs, {tokens ? true : "0"} tokens, {balance.length} balance</p>
                                 </>
                                 )}
 
@@ -505,7 +503,7 @@ console.log("balance",balance)
                                 {badge === 'Premium' && (
                                   <>
                                 <img src="https://cdn-icons-png.flaticon.com/512/70/70535.png" alt="Premium Badge" className="w-32 mx-auto" />
-                                <p className="text-center mt-1">{nfts.length} NFTs</p>
+                                <p className="text-center mt-1">{nfts.length} NFTs, {tokens.length} tokens, {balance.length} balance</p>
                                 </>
                                 )}
                             </div>

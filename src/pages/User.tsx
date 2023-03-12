@@ -42,7 +42,7 @@ const navigation = [
   { name: "User", href: "#", icon: UserIcon, current: true },
 ];
 const userNavigation = [
-  { icon: UserIcon, href: "#" },
+  { name:"" ,icon: UserIcon, href: "#" },
   
 ];
 
