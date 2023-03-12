@@ -61,7 +61,7 @@ const CreateProfile = ({ sdk }: Props) => {
   };
 
   const handleCreateProfile = async () => {
-    // if (usersList.length > 0) return;
+    if (usersList.length > 0) return;
 
     try {
       const metadata_id = uuidv4();
@@ -118,7 +118,6 @@ const CreateProfile = ({ sdk }: Props) => {
          
           <button className={styles.button} onClick={handleCreateProfile}>Create Profile</button>
         </div>
-        {metadataUri && <p>{metadataUri}</p>}
       </div>
 );
 };
