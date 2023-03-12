@@ -61,7 +61,7 @@ const CreateProfile = ({ sdk }: Props) => {
   };
 
   const handleCreateProfile = async () => {
-    if (usersList.length > 0) return;
+    // if (usersList.length > 0) return;
 
     try {
       const metadata_id = uuidv4();

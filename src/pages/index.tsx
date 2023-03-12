@@ -84,6 +84,8 @@ export default function Feed() {
     new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
     new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
     new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
+    new PublicKey("2Tf5yG3gkf8xtmpkVBaxhDgPfJ6SRNHbU8SgHfTqmmRp"),
+    
   ];
 
   const toggleTheme = () => {
@@ -134,10 +136,11 @@ export default function Feed() {
         setPostsList(shuffleArray(postsData));
         setProfileMetadataList(profileMetadataList.flat());
         setCurrentprofileMetadataList(currentprofileMetadataList[0]?.[0])
+        console.log("cuurent",currentprofileMetadataList)
         counterRef.current += 1;
       }
     };
-    if (counterRef.current < 6) {
+    if (counterRef.current < 7) {
       fetchData();
     }
   }, [wallet.connected, sdk, staticAddresses,counterRef]);
@@ -196,7 +199,7 @@ export default function Feed() {
       setJsonData(profiles);
       counterRef.current += 1;
     };
-    if (counterRef.current < 7) {
+    if (counterRef.current < 8) {
       fetchProfileData();
     }
   }, [profileMetadataList, userPublicKey,counterRef]);
