@@ -80,6 +80,7 @@ export default function Feed() {
     }, [theme]);
     const wallet = useWallet();
     const userPublicKey = wallet?.publicKey as PublicKey;
+    const currentpublickey = wallet?.publicKey as PublicKey;
     const [usersList, setUsersList] = useState<any[]>([]);
     const [Allprofile,setAllProfile] =useState<any[]>([]);
     const [jsonData, setJsonData] = useState(null);
@@ -133,7 +134,7 @@ export default function Feed() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(userPublicKey);
+        const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(currentpublickey);
         const allprofiledata = await Promise.all(
           staticAddresses.map((address) =>
             sdk.profileMetadata.getProfileMetadataAccountsByUser(address)
@@ -146,7 +147,7 @@ export default function Feed() {
           throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
+        setUsersList(await sdk.user.getUserAccountsByUser(currentpublickey));
         setAllProfile(shuffleArray(allprofiledata.flat()));
         setJsonData(data);
         counterRef.current += 1;
