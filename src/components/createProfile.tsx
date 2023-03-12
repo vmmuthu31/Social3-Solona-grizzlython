@@ -38,7 +38,7 @@ const CreateProfile = ({sdk}: Props) => {
   const [metadataUri, setMetadataUri] = useState('');
   const { create, profilePDA, error, loading } = useCreateProfile(sdk);
   const Profile = async (name:any, bio: String, username:String, avatar: String) => {
-    // if (usersList.length > 0) return;
+    if (usersList.length > 0) return;
     try {
       const metadata_id = uuidv4();
       const ipfsResult = await uploadToIPFS({
@@ -61,7 +61,7 @@ const CreateProfile = ({sdk}: Props) => {
     const init = async () => {
       const users = await sdk?.user.getUserAccountsByUser(userPublicKey) as any;
       const usersList = users?.map((user: any) => user.publicKey.toBase58());
-      setUsersList(usersList[0]);
+      setUsersList(usersList);
       if (usersList.length > 0) {
         setSelectedUserOption(usersList[0]);
       }
