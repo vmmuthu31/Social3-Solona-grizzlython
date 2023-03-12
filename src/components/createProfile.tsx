@@ -34,8 +34,8 @@ const CreateProfile = ({sdk}: Props) => {
   const [avatar, SetAvatar] = useState('')
   const [selectedUserOption, setSelectedUserOption] = useState("");
   const { create, profilePDA, error, loading } = useCreateProfile(sdk);
-  const Profile = async (name:any, bio: String, username:String, avatar: String) => {
-    if (usersList.length > 0) return;
+  const Profile = async () => {
+    if (usersList?.length > 0) return;
     try {
       const metadata_id = uuidv4();
       const ipfsResult = await uploadToIPFS({
