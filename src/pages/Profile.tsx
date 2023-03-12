@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment,useRef } from "react";
 import React from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
 import Moralis from 'moralis';
@@ -86,43 +86,50 @@ export default function Feed() {
     const userPublicKey = wallet?.publicKey as PublicKey;
     const currentaddress= wallet?.publicKey as PublicKey;
     const [nfts, setNfts] = useState([]);
-    const [usersList, setUsersList] = useState<any[]>([]);
-    const [profilesList, setProfilesList] = useState<any[]>([]);
     const [badge, setBadge] = useState('Basic');
-    const [profileMetadataList, setProfileMetadataList] = useState<any[]>([]);
-    const [postsList, setPostsList] = useState<any[]>([]);
     const [jsonData, setJsonData] = useState(null);
     const [allJson, setAllJson] = useState<any>(null);
     const [Allprofile,setAllProfile] =useState<any[]>([]);
     const [methodCalled, setMethodCalled] = useState(false);
-
+    const counterRef = useRef(0);
+    const [balance, setBalance] =useState([]);
     const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
     const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-    
-  
     useEffect(() => {
-      const runApp = async () => {
-        await Moralis.start({
-          apiKey: "32i7JeKMh7sgaJ8cvdl2YqUHIvgP8uvjlwaiNoKshm89JvAv6yCMxcSgRlIxl5PZ",
-        });
-    
-        const address = "vUPpzLhoCgND6Se2SeF7esqoWenxqYptt1XLXpMhi96";
-        const network = SolNetwork.DEVNET;
-    
-        const response = await Moralis.SolApi.account.getNFTs({
-          address,
-          network,
-        });
-        setNfts(response.toJSON());
-
-      };
-    
-      if (!methodCalled) {
-        runApp();
-        setMethodCalled(true);
+      async function getAccountBalance() {
+        try {
+          await Moralis.start({
+            apiKey: "32i7JeKMh7sgaJ8cvdl2YqUHIvgP8uvjlwaiNoKshm89JvAv6yCMxcSgRlIxl5PZ"
+          });
+  
+          const balances = await Moralis.SolApi.account.getPortfolio({
+            "network": "devnet",
+            "address": "AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"
+          });
+          const Tokenprice = await Moralis.SolApi.account.getTokenPrice({
+            "network": "devnet",
+            "address": "AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"
+          });
+          const getspl = Moralis.SolApi.account.getSPL({
+            "network": "devnet",
+            "address": "AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"
+          });
+          console.log(Tokenprice.raw);
+          setNfts(Tokenprice.raw())
+          setBalance(balances.raw())
+          console.log(balances.raw);
+          counterRef.current += 1;
+        } catch (e) {
+          console.error(e);
+        }
       }
-    }, [methodCalled]);
-
+      if (counterRef.current < 2) {
+        getAccountBalance();
+      }
+      
+    }, [counterRef]);
+    console.log("nfts",nfts)  
+console.log("balance",balance)
     const NFTBadgeAvatar = ({ nfts }) => {
     if (nfts >= 5) {
         setBadge('Premium');
@@ -131,17 +138,13 @@ export default function Feed() {
     const staticAddresses: PublicKey[] = [
       new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
       new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
-      new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
       new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
-      new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
-      new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
     ];
     useEffect(() => {
       const fetchProfileData = async () => {
         const metadataUrls =  Allprofile?.map(item => item[0].account?.metadataUri);
         const profiles = [];
         for (let i = 0; i < metadataUrls.length; i++) {
-          
           const metadataUrl = metadataUrls[i];
           try {
             const response = await fetch(metadataUrl);
@@ -151,15 +154,17 @@ export default function Feed() {
               metadataUri: metadataUrl,
               data: data
             });
+            counterRef.current += 1;
           } catch (error) {
             console.error(error);
           }
         }
         setAllJson(profiles);
       };
-    
-      fetchProfileData();
-    }, [userPublicKey,Allprofile]);
+      if (counterRef.current < 2) {
+        fetchProfileData();
+      }
+    }, [userPublicKey,Allprofile,counterRef]);
     const shuffleArray = (array) => {
       let arr = [...array];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -177,8 +182,6 @@ export default function Feed() {
     
         try {
           const profileMetadataList = await sdk.profileMetadata.getProfileMetadataAccountsByUser(currentaddress);
-          const usersList = await sdk.user.getUserAccountsByUser(currentaddress);
-          const profilesList = await sdk.profile.getProfileAccountsByUser(currentaddress);
           const allprofiledata = await Promise.all(
             staticAddresses.map((address) =>
               sdk.profileMetadata.getProfileMetadataAccountsByUser(address)
@@ -191,20 +194,16 @@ export default function Feed() {
             const jsonData = await response.json();
             setJsonData(jsonData);
           }
-    
-          const postsList = await sdk.post.getPostAccountsByUser(currentaddress);
-          setUsersList(usersList);
-          setProfilesList(profilesList);
           setAllProfile(shuffleArray(allprofiledata.flat()));
-          setProfileMetadataList(profileMetadataList as any);
-          setPostsList(postsList);
+          counterRef.current += 1;
         } catch (error) {
           console.error(error);
         }
       };
-    
-      fetchData();
-    }, [wallet.connected, sdk, userPublicKey,staticAddresses]);
+      if (counterRef.current < 2) {
+        fetchData();
+      }
+    }, [wallet.connected, sdk,staticAddresses,counterRef]);
     const recommendedProfiles = allJson?.slice(0, 3).map(profile => {
       const { name, bio, username, avatar } = profile.data;
       return { name, bio, username, avatar };
@@ -487,7 +486,7 @@ export default function Feed() {
            
             </div>
             <div className="mt-3">
-            <label className="font-bold text-lg ">My NFT Badges:</label>
+            <label className="font-bold text-lg ">My Badges:</label>
             {badge && (
                         <div className="max-w-2xl mx-auto">
                           <div className="bg-white shadow-md rounded-lg overflow-hidden">

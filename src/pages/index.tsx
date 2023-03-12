@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useRef } from "react";
 import React from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
 import styles from "../styles/Home.module.css";
@@ -64,6 +64,7 @@ function classNames(...classes) {
 export default function Feed() {
   const [isDarkMode, setDarkMode] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const counterRef = useRef(0);
   const wallet = useWallet();
   const userPublicKey = wallet?.publicKey as PublicKey;
   const currentaddress= wallet?.publicKey as PublicKey;
@@ -82,10 +83,7 @@ export default function Feed() {
   const staticAddresses: PublicKey[] = [
     new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
     new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
-    new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
     new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
-    new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
-    new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
   ];
 
   const toggleTheme = () => {
@@ -136,11 +134,13 @@ export default function Feed() {
         setPostsList(shuffleArray(postsData));
         setProfileMetadataList(profileMetadataList.flat());
         setCurrentprofileMetadataList(currentprofileMetadataList[0]?.[0])
+        counterRef.current += 1;
       }
     };
-  
-    fetchData()
-  }, [wallet.connected, sdk, staticAddresses]);
+    if (counterRef.current < 6) {
+      fetchData();
+    }
+  }, [wallet.connected, sdk, staticAddresses,counterRef]);
   useEffect(() => {
     const fetchMetadata = async () => {
       if (postsList.length > 0) {
@@ -149,11 +149,14 @@ export default function Feed() {
           postDataLink.map((url) => fetch(url).then((res) => res.json()))
         );
         setMetadataList(postDataJson);
+        counterRef.current += 1;
       }
     };
-  
-    fetchMetadata();
-  }, [postsList]);
+    if (counterRef.current < 6) {
+      fetchMetadata();
+    }
+  }, [postsList,counterRef]);
+  useEffect(() => {
     const fetchcurrentuser = async () => {
      
         const postDataLink = currentprofileMetadataList?.account?.metadataUri
@@ -164,8 +167,12 @@ export default function Feed() {
             const jsonData = data;
             setCurrent(jsonData);
           })
+          counterRef.current += 1;
         }
-    fetchcurrentuser();
+    if (counterRef.current < 6) {
+      fetchcurrentuser();
+    }
+  }, [profileMetadataList, userPublicKey,counterRef]);
     
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -187,10 +194,12 @@ export default function Feed() {
         }
       }
       setJsonData(profiles);
+      counterRef.current += 1;
     };
-  
-    fetchProfileData();
-  }, [profileMetadataList, userPublicKey]);
+    if (counterRef.current < 7) {
+      fetchProfileData();
+    }
+  }, [profileMetadataList, userPublicKey,counterRef]);
   const recommendedProfiles = jsonData?.slice(0, 3).map(profile => {
     const { name, bio, username, avatar } = profile.data;
     return { name, bio, username, avatar };

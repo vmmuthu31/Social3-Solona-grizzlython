@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment,useRef } from "react";
 import React from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
 import {
@@ -61,7 +61,7 @@ function classNames(...classes) {
 
 export default function Feed() {
     const [isDarkMode, setDarkMode] = React.useState(false);
-  
+    const counterRef = useRef(0);
     var toggleDarkMode = function (checked) {
       setDarkMode(checked);
     };
@@ -89,10 +89,7 @@ export default function Feed() {
     const staticAddresses: PublicKey[] = [
       new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
       new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
-      new PublicKey("DMqD9QHpJuxVbr46A3hoHeJgZnkaK1C7TQfag8VVMvzz"),
       new PublicKey("AuuVT8BqwDtyXdqqoVCntuPjnwg3eu5oMumsZX4UnVfy"),
-      new PublicKey("2YQm9U8EFyKyow1nEhoHfRoR3FD49DQv5hM4k7BB5AzZ"),
-      new PublicKey("BhXZtH3h1hbKx8LfkZYRxSSvmCEF4NnRjJStxJLJTCDV"),
     ];
     const shuffleArray = (array) => {
       let arr = [...array];
@@ -119,15 +116,17 @@ export default function Feed() {
               metadataUri: metadataUrl,
               data: data
             });
+            counterRef.current += 1;
           } catch (error) {
             console.error(error);
           }
-        }
-        setAllJson(profiles);
+        } 
+          setAllJson(profiles);
       };
-    
+      if (counterRef.current < 2) {
       fetchProfileData();
-    }, [userPublicKey,staticAddresses]);
+      }
+    }, [userPublicKey,staticAddresses,counterRef]);
     
 
   useEffect(() => {
@@ -149,15 +148,17 @@ export default function Feed() {
         setUsersList(await sdk.user.getUserAccountsByUser(userPublicKey));
         setAllProfile(shuffleArray(allprofiledata.flat()));
         setJsonData(data);
+        counterRef.current += 1;
       } catch (error) {
         console.error(error);
       }
     };
-  
+    if (counterRef.current < 1) {
     if (wallet.connected && sdk) {
       fetchData();
     }
-  }, [wallet.connected, sdk]);
+  }
+  }, [wallet.connected, sdk,counterRef]);
 
   const recommendedProfiles = allJson?.slice(0, 3).map(profile => {
     const { name, bio, username, avatar } = profile.data;
