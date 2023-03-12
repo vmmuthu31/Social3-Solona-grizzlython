@@ -45,8 +45,7 @@ const navigation = [
   
 ];
 const userNavigation = [
-  { name: "Settings", icon: ViewGridAddIcon, href: "#" },
-  { name: "Sign Out", icon: LogoutIcon, href: "#" },
+  { icon: UserIcon, href: "#" },
 ];
 
 const BellNavigation = [{ name: "Notifications", href: "#" }];
@@ -57,49 +56,6 @@ const WalletMultiButtonDynamic = dynamic(
   { ssr: false }
 );
 
-const Post = [
-  {
-    id: "81614",
-    likes: "29",
-    replies: "11",
-    views: "2.7k",
-    author: {
-      name: "Fred",
-      imageUrl:
-        "https://ipfs.io/ipfs/bafkreibw4jyovs7gg42tamg3cmjlciahlzixd7u2mjkzswirxigkwscwl4",
-      href: "#",
-    },
-    date: "@fblauer.lens",
-    day: "3 days ago",
-    href: "#",
-    body: `
-      <p>Hi. Just trying out the platform. But I can't seem to refer or apply to Jobs to complete my profile? Don't know what I am doing wrong.</p>
-    `,
-  },
-];
-const whoToFollow = [
-  {
-    name: "Lens Protocol",
-    handle: "A premissionless, composable, & decentralized social graph...",
-    href: "#",
-    imageUrl:
-      "https://ipfs.io/ipfs/bafkreice45jmlvhctbt2nsygitnt3jphbahcq5hlx7vrlav63hmjacb5ea",
-  },
-  {
-    name: "Lens Protocol",
-    handle: "We built Aave Protocol, an open source and non-custodial...",
-    href: "#",
-    imageUrl:
-      "https://ipfs.io/ipfs/bafybeihgymqvubldycb5nhrha6md6bveo64cjifagp5zbiuw3aizooowna",
-  },
-  {
-    name: "Lens Protocol",
-    handle: "Building @LensProtocol & @AaveAave",
-    href: "#",
-    imageUrl:
-      "https://ipfs.io/ipfs/bafybeiehsyi2xtlfr7zmsuadruhwvodc4sxs6oh57bzd3fhd2mcjsybaiy",
-  },
-];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -410,6 +366,7 @@ export default function Feed() {
                                       "block py-2 px-4 text-sm text-gray-700"
                                     )}
                                   >
+                                     <div className="flex">
                                     <item.icon
                                       className={classNames(
                                         item.current
@@ -419,9 +376,12 @@ export default function Feed() {
                                       )}
                                       aria-hidden="true"
                                     />
-                                    <span className="truncate">
-                                      {item.name}
+                                    <span className="">
+                                    {jsonData && (
+       <>{jsonData.name} </>
+      )}
                                     </span>
+                                    </div>
                                   </Link>
                                 )}
                               </Menu.Item>
