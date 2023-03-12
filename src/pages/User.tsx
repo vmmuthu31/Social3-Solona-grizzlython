@@ -86,8 +86,6 @@ export default function Feed() {
     const [allJson, setAllJson] = useState<any>(null);
     const connection = useMemo(() => new Connection("https://greatest-fluent-firefly.solana-devnet.discover.quiknode.pro/fe61091953c4185459c5e2df72ab90a12ee2c17c/", "confirmed"), []);
     const sdk = useGumSDK(connection, { preflightCommitment: "confirmed" }, "devnet");
-    const oldconnection = useMemo(() => new Connection("https://api.devnet.solana.com", "confirmed"), []);
-    const oldsdk = useGumSDK(oldconnection, { preflightCommitment: "confirmed" }, "devnet");
     const staticAddresses: PublicKey[] = [
       new PublicKey("CCZz1UAKw7o5ftDYtYPaR5oX4ZvC3QmsGNeCJeM3FMCP"),
       new PublicKey("FQPxZebhpTqTCTBW8cHjoYgbPZVbMPZGJ5pNqE3GnGPo"),
@@ -433,7 +431,7 @@ export default function Feed() {
                       </div>
                     </div>
             <div className="mt-5">
-                    <CreateUser  sdk={oldsdk} />
+                    <CreateUser  sdk={sdk} />
                     </div>
                   </section>
                 </div>
