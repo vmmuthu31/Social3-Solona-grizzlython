@@ -161,7 +161,6 @@ export default function Feed() {
   }, [postsList,counterRef]);
   useEffect(() => {
     const fetchcurrentuser = async () => {
-     
         const postDataLink = currentprofileMetadataList?.account?.metadataUri
         const apiUrl = postDataLink;
         fetch(apiUrl)
