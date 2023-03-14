@@ -1,4 +1,10 @@
-# gum-example-app
+# Social3-Solona-grizzlython
+Social3-solona-grizzlython uses the Gum protocol to create user, profiles and post and fetch recommended profiles. It also create badges for the users who hold sol NFTS and tokens. It displays the sol wallet balance too.
+
+# Tech Stacks
+1. NextJS
+2. Solona
+3. Gum Protocol
 
 This is a reference example app built using [@gumhq/react-sdk](https://github.com/gumhq/sdk/tree/master/packages/react-sdk) and Next.js.
 
